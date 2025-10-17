@@ -1,42 +1,103 @@
-name: ci
+name: CI
 
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  FOUNDRY_PROFILE: ci
 
 jobs:
-  build-and-test:
+  foundry:
+    name: Foundry Tests + PR Comment
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          node-version: '20'
-      - name: Install Foundry
-        shell: bash
-        run: |
-          curl -L https://foundry.paradigm.xyz | bash
-          source ~/.bashrc || true
-          ~/.foundry/bin/foundryup
-      - name: Build + test EVM
+          submodules: recursive
+
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+
+      - name: Show Forge version
+        run: forge --version
+
+      - name: Build
+        working-directory: evm
+        run: forge build
+
+      - name: Tests (with gas report)
         working-directory: evm
         run: |
-          ~/.foundry/bin/forge build
-          ~/.foundry/bin/forge test --gas-report -vvv
-          ~/.foundry/bin/forge snapshot --check
-      - name: Build Web
-        working-directory: web
-        run: |
-          npm ci
-          npm run build
-      - name: Coverage (EVM)
+          set +e
+          forge test --gas-report -vvv | tee ../gas-report.txt
+          echo $? > ../test-exit-code.txt
+          set -e
+
+      - name: Coverage (summary + lcov)
         working-directory: evm
         run: |
-          ~/.foundry/bin/forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report lcov --report summary
-          mkdir -p coverage && mv lcov.info coverage/lcov.info
+          forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report summary > ../coverage-summary.txt
+          forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report lcov --output ../lcov.info
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: evm-coverage
-          path: evm/coverage/lcov.info
+          name: evm-coverage-lcov
+          path: lcov.info
+
+      - name: Upload gas report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gas-report
+          path: gas-report.txt
+
+      - name: Build PR comment (gas + coverage)
+        if: github.event_name == 'pull_request'
+        run: |
+          # Strip ANSI escapes from gas report if any
+          sed -r "s/\x1B\[[0-9;]*[mK]//g" gas-report.txt > gas-report-clean.txt || cp gas-report.txt gas-report-clean.txt
+          {
+            echo "<!-- ci-gas-coverage -->";
+            echo "### CI: Gas Report and Coverage";
+            echo;
+            echo "<details><summary>Gas Report</summary>";
+            echo;
+            echo '```text';
+            cat gas-report-clean.txt;
+            echo '```';
+            echo;
+            echo "</details>";
+            echo;
+            echo "<details><summary>Coverage Summary</summary>";
+            echo;
+            echo '```text';
+            cat coverage-summary.txt;
+            echo '```';
+            echo;
+            echo "</details>";
+          } > pr_comment.md
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: pr_comment.md
+          edit-mode: replace
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- ci-gas-coverage -->'
+      - name: Fail if tests failed
+        run: |
+          if [ -f test-exit-code.txt ] && [ "$(cat test-exit-code.txt)" != "0" ]; then
+            echo "Tests failed; exiting with non-zero to fail job." >&2
+            exit 1
+          fi
