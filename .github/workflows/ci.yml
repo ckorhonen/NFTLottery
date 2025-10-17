@@ -48,7 +48,7 @@ jobs:
           set +e
           forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report summary > ../coverage-summary.txt
           cov_summary_ec=$?
-          forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report lcov --output ../lcov.info
+          forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report lcov --out ../lcov.info
           cov_lcov_ec=$?
           echo $cov_summary_ec > ../cov-summary-exit.txt
           echo $cov_lcov_ec > ../cov-lcov-exit.txt
