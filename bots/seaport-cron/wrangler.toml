@@ -1,0 +1,11 @@
+name = "seaport-purchase-bot"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+# Space-separated list of deployment json filenames (by chainId) to monitor
+DEPLOYMENTS = "1 8453 42161 137"
+

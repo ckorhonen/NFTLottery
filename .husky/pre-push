@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+echo "[pre-push] Running Foundry build + tests..."
+( cd evm && forge build && forge test --gas-report )
+
+echo "[pre-push] Running coverage summary..."
+( cd evm && forge coverage --ir-minimum --report summary )
+
+echo "[pre-push] Building web app..."
+( cd web && (npm ci --ignore-scripts --silent || npm install --ignore-scripts --silent) && npm run build --silent )
+
+echo "[pre-push] OK"

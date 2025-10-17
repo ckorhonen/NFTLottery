@@ -1,0 +1,9 @@
+node_modules
+web/dist
+evm/out
+evm/lib
+deployments
+.solhintcache
+.cache
+.DS_Store
+

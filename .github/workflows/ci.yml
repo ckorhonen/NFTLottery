@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Foundry
+        shell: bash
+        run: |
+          curl -L https://foundry.paradigm.xyz | bash
+          source ~/.bashrc || true
+          ~/.foundry/bin/foundryup
+      - name: Build + test EVM
+        working-directory: evm
+        run: |
+          ~/.foundry/bin/forge build
+          ~/.foundry/bin/forge test --gas-report -vvv
+          ~/.foundry/bin/forge snapshot --check
+      - name: Build Web
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+      - name: Coverage (EVM)
+        working-directory: evm
+        run: |
+          ~/.foundry/bin/forge coverage --ir-minimum --exclude-tests --no-match-coverage '^script/' --report lcov --report summary
+          mkdir -p coverage && mv lcov.info coverage/lcov.info
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: evm-coverage
+          path: evm/coverage/lcov.info

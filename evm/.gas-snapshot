@@ -1,0 +1,6 @@
+CounterTest:testFuzz_SetNumber(uint256) (runs: 256, μ: 27762, ~: 28384)
+CounterTest:test_Increment() (gas: 28409)
+GasTest:testGas_CloseRound_Finalize_Draw_Claim() (gas: 1089302)
+GasTest:testGas_DepositSingle() (gas: 151865)
+LotteryTest:test_DepositCloseAndSplit() (gas: 345445)
+LotteryTest:test_RegisterPrizes_DrawAndClaim() (gas: 1155436)

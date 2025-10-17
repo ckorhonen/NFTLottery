@@ -1,0 +1,15 @@
+{
+  "name": "seaport-purchase-bot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "viem": "^2.13.7"
+  },
+  "devDependencies": {
+    "wrangler": "^3.73.0"
+  }
+}
+
