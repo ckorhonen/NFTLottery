@@ -16,9 +16,10 @@ jobs:
       - name: Install Foundry
         shell: bash
         run: |
+          export FOUNDRY_DIR="$HOME/.foundry"
           curl -L https://foundry.paradigm.xyz | bash
           source ~/.bashrc || true
-          ~/.foundry/bin/foundryup
+          "$FOUNDRY_DIR/bin/foundryup"
       - name: Build + test EVM
         working-directory: evm
         run: |
