@@ -92,9 +92,9 @@ contract WrapperRevertsTest is Test {
         lot.deposit{value: 0.02 ether}();
         ISeaport.BasicOrderParameters memory p = _basicOrder(address(0xCAFE), 1, uint8(ISeaport.ItemType.ERC721), 1);
         bytes memory data = abi.encodeWithSelector(SeaportExecutor.buyBasicERC721.selector, 1, p);
-        vm.expectRevert(bytes("exec not set"));
         vm.prank(owner);
         lot.setExecutor(owner, true);
+        vm.expectRevert(bytes("exec not set"));
         vm.prank(owner);
         lot.executeSeaportBasicERC721(1, data, 0.01 ether, 0.02 ether);
     }
@@ -103,9 +103,9 @@ contract WrapperRevertsTest is Test {
         // before close
         ISeaport.BasicOrderParameters memory p = _basicOrder(address(0xCAFE), 1, uint8(ISeaport.ItemType.ERC721), 1);
         bytes memory data = abi.encodeWithSelector(SeaportExecutor.buyBasicERC721.selector, 1, p);
-        vm.expectRevert(bytes("bad state"));
         vm.prank(owner);
         lot.setExecutor(owner, true);
+        vm.expectRevert(bytes("bad state"));
         vm.prank(owner);
         lot.executeSeaportBasicERC721(1, data, 0.01 ether, 0.02 ether);
     }
@@ -154,9 +154,9 @@ contract WrapperRevertsTest is Test {
             sqrtPriceLimitX96: 0
         });
         bytes memory data = abi.encodeWithSelector(UniswapV3Executor.swapExactInputSingle.selector, 1, p);
-        vm.expectRevert(bytes("exec not set"));
         vm.prank(owner);
         lot.setExecutor(owner, true);
+        vm.expectRevert(bytes("exec not set"));
         vm.prank(owner);
         lot.executeUniV3SwapNative(1, data, p.amountIn, 0, p.amountIn);
     }
@@ -173,9 +173,9 @@ contract WrapperRevertsTest is Test {
             sqrtPriceLimitX96: 0
         });
         bytes memory data = abi.encodeWithSelector(UniswapV3Executor.swapExactInputSingle.selector, 1, p);
-        vm.expectRevert(bytes("bad state"));
         vm.prank(owner);
         lot.setExecutor(owner, true);
+        vm.expectRevert(bytes("bad state"));
         vm.prank(owner);
         lot.executeUniV3SwapNative(1, data, p.amountIn, 0, p.amountIn);
     }

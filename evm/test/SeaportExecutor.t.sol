@@ -178,6 +178,7 @@ contract SeaportExecutorTest is Test {
         });
         bytes memory data = abi.encodeWithSelector(SeaportExecutor.buyBasicERC1155.selector, 1, p);
         vm.expectRevert(bytes("seaport exec fail"));
+        vm.prank(address(exec));
         lot.executeSeaportBasicERC1155(1, data, 0.01 ether, 0.02 ether);
     }
 
@@ -206,9 +207,9 @@ contract SeaportExecutorTest is Test {
             signature: ""
         });
         bytes memory data = abi.encodeWithSelector(SeaportExecutor.buyBasicERC721.selector, 1, p);
-        vm.expectRevert(bytes("seaport exec fail"));
         vm.prank(owner);
         lot.setExecutor(owner, true);
+        vm.expectRevert(bytes("seaport exec fail"));
         vm.prank(owner);
         lot.executeSeaportBasicERC721(1, data, 0.01 ether, 0.02 ether);
     }

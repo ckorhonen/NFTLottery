@@ -73,6 +73,7 @@ contract WrapperCapsTest is Test {
         ISeaport.BasicOrderParameters memory p = _basicOrder(address(0xCAFE), 1);
         bytes memory data = abi.encodeWithSelector(SeaportExecutor.buyBasicERC721.selector, 1, p);
         vm.expectRevert(bytes("price>cap"));
+        vm.prank(address(se));
         lot.executeSeaportBasicERC721(1, data, 0.02 ether, 0.01 ether);
     }
 
@@ -94,6 +95,7 @@ contract WrapperCapsTest is Test {
         // encode with rid=99 but wrapper will be passed 1
         bytes memory data = abi.encodeWithSelector(UniswapV3Executor.swapExactInputSingle.selector, uint256(99), p);
         vm.expectRevert(bytes("rid mismatch"));
+        vm.prank(address(ue));
         lot.executeUniV3SwapNative(1, data, p.amountIn, 0, p.amountIn);
     }
 
@@ -114,6 +116,7 @@ contract WrapperCapsTest is Test {
         });
         bytes memory data = abi.encodeWithSelector(UniswapV3Executor.swapExactInputSingle.selector, uint256(1), p);
         vm.expectRevert(bytes("minOut too low"));
+        vm.prank(address(ue));
         lot.executeUniV3SwapNative(1, data, p.amountIn, 1, p.amountIn);
     }
 }
